@@ -1,0 +1,26 @@
+#extend("base")
+
+#export("title") { Stations }
+
+#export("content") {
+
+    <table class="table">
+    	<tr>
+    		<th>ID</th>
+    		<th>Name</th>
+    		<th>Country</th>
+    		<th>Stream</th>
+    	</tr>
+        #loop(stations, "station") {
+            <tr>
+            	<td><a href="/station/#(station.id)">#(station.id)</a></td>
+            	<td>#(station.name)</td>
+            	<td>#(station.country)</td>
+                <td>#(station.stream)</td>
+            </tr>
+        }
+    </table>
+
+    <a href="/add" class="btn btn-primary">Add a station</a>
+}
+
