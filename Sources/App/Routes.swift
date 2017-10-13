@@ -33,6 +33,18 @@ final class Routes: RouteCollection {
                 ])
         }
         
+        builder.get("api/station", ":id") { req in
+            
+            // Make sure the request contains an id
+            guard let stationId = req.parameters["id"]?.int else {
+                throw Abort.badRequest
+            }
+            
+            let station = try Station.makeQuery().find(stationId)
+            
+           return try station!.makeJSON()
+        }
+        
         builder.get("add") { req in
             return try self.view.make("edit")
         }
@@ -48,6 +60,16 @@ final class Routes: RouteCollection {
             return Response(redirect: "/")
         }
         
+        builder.post("api/station") { req in
+            guard let form = req.formURLEncoded else {
+                throw Abort.badRequest
+            }
+            
+            let station = try Station(node: form)
+            try station.save()
+            
+            return try station.makeJSON()
+        }
         builder.post("station", ":id") { req in
             
             // Make sure it's a form posted
@@ -78,7 +100,40 @@ final class Routes: RouteCollection {
             return Response(redirect: "/")
         }
         
+        builder.post("api/station", ":id") { req in
+            
+            // Make sure it's a form posted
+            guard let form = req.formURLEncoded else {
+                throw Abort.badRequest
+            }
+            
+            // Make sure the request contains an id
+            guard let stationId = req.parameters["id"]?.int else {
+                throw Abort.badRequest
+            }
+            
+            guard let station = try Station.makeQuery().find(stationId) else {
+                throw Abort.notFound
+            }
+            
+            // Use Vapor's node functions to create a new entity
+            let newStation = try Station(node: form)
+            
+            // Assign the new values back to the old
+            station.country = newStation.country
+            station.name = newStation.name
+            station.description = newStation.description
+            
+            // ...and save
+            try station.save()
+            
+            return try station.makeJSON()
+        }
+        
         builder.get("stations.json") { req in
+            return try Station.makeQuery().all().makeJSON()
+        }
+        builder.get("api/stations") { req in
             return try Station.makeQuery().all().makeJSON()
         }
     }
